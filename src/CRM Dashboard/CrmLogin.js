@@ -28,29 +28,36 @@ const CrmLogin = () => {
   
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true); // Start loading
-    try {
-      const response = await axios.post(`${API_BASE_URL}/crm/admin/login`, {
-        username,
-        password,
-      });
-      login(response.data);
-      toast.success("Login successful! Redirecting to dashboard ...", {
-        autoClose: 4000,
-      });
-      setTimeout(() => {
-        navigate("/dashboard"); // Redirect to dashboard after toast
-      }, 3000);
-    } catch (err) {
-      setError("Invalid credentials");
-      toast.error("Login failed! Please check your credentials.", {
-        autoClose: 3000,
-      });
-    } finally {
-      setLoading(false); // Stop loading
-    }
-  };
+  e.preventDefault();
+  setLoading(true); // Start loading
+  try {
+    const params = new URLSearchParams();
+    params.append("username", username);
+    params.append("password", password);
+
+    const response = await axios.post(`${API_BASE_URL}/crm/admin/login`, params, {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+
+    login(response.data);
+    toast.success("Login successful! Redirecting to dashboard ...", {
+      autoClose: 4000,
+    });
+    setTimeout(() => {
+      navigate("/dashboard"); // Redirect to dashboard after toast
+    }, 3000);
+  } catch (err) {
+    setError("Invalid credentials");
+    toast.error("Login failed! Please check your credentials.", {
+      autoClose: 3000,
+    });
+  } finally {
+    setLoading(false); // Stop loading
+  }
+};
+
   const lottieRef = useRef(null);
 
   return (
