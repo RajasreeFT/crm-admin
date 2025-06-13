@@ -9,6 +9,7 @@ import Footer from './components/pages/Footer';
 import PreviousProjects from './components/pages/PreviousProjects';
 import Chatbot from './components/includes/Chatbots';
 import Preloader from './components/Preloader';
+import WhyChooseUs from './components/pages/WhyChooseUs';
 
 const Home = () => {
   const [loading, setLoading] = useState(true);
@@ -29,10 +30,10 @@ const Home = () => {
       ) : (
         <main className={`main ${transition ? 'fade-in-active' : 'fade-in'}`}>
           <Header />
-          <Slider />
-          <Project />
-          <PreviousProjects />
+          <Slider />     
           <About />      
+           <Project />
+           <WhyChooseUs/>
           <CustomerReview />
           <Contact />
           <Chatbot />

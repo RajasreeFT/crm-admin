@@ -8,6 +8,8 @@ import "react-toastify/dist/ReactToastify.css";
 import AddEmployee from "./AddEmployee";
 import EmployeeTreeView from "./EmployeeTreeView";
 import CustomerForm from "./CustomerForm";
+import TermsAndConditions from "./MainWebsite/components/pages/TermsAndConditions";
+import PrivacyPolicy from "./MainWebsite/components/pages/PrivacyPolicy";
 
 function App() {
   return (
@@ -16,7 +18,8 @@ function App() {
         <Routes>
           <Route element={<CrmApp />} path="/*" />
           <Route element={<Home />} path="/" />
-         
+          <Route element={<TermsAndConditions/>} path="/terms"/>
+          <Route element={<PrivacyPolicy/>} path="/policy"/>
         </Routes>
       </BrowserRouter>
     </div>
