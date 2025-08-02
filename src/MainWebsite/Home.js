@@ -33,7 +33,7 @@ const Home = () => {
           <Slider />     
           <About />      
            <Project />
-           <WhyChooseUs/>
+       
           <CustomerReview />
           <Contact />
           <Chatbot />

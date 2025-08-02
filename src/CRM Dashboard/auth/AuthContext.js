@@ -7,6 +7,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(localStorage.getItem('jwtToken') || null);
     const [username, setUsername] = useState(null);
+    console.log(token)
 
     // Helper function to decode token and extract payload
     const decodeToken = (token) => {

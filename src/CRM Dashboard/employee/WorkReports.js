@@ -6,6 +6,8 @@ import { API_BASE_URL } from "../auth/Api";
 import useAxios from "../auth/useAxios";
 import { Breadcrumbs, Link } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import Pagination from "@mui/material/Pagination";
+import Stack from "@mui/material/Stack";
 
 const WorkReports = () => {
   const [workReports, setWorkReports] = useState([]);
@@ -15,6 +17,8 @@ const WorkReports = () => {
     lat: null,
     lon: null,
   });
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 20;
   const api = useAxios();
 
   useEffect(() => {
@@ -39,6 +43,18 @@ const WorkReports = () => {
     setSelectedLocation({ lat, lon });
     setShowModal(true);
   };
+
+  // Pagination logic
+  const totalRows = workReports.length;
+  const totalPages = Math.ceil(totalRows / rowsPerPage);
+  const sortedReports = workReports
+    .slice()
+    .sort((a, b) => new Date(b.date) - new Date(a.date)); // Most recent first
+
+  const paginatedReports = sortedReports.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage
+  );
 
   return (
     <Base>
@@ -89,68 +105,86 @@ const WorkReports = () => {
             <Spinner animation="border" variant="primary" />
           </div>
         ) : (
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th>ID</th>
-
-                <th>Employee</th>
-                <th>Date</th>
-                <th>Name of Person</th>
-                <th>Project Name</th>
-                <th>Remarks</th>
-                <th>Work Report</th>
-                <th>Reminder Date</th>
-                <th>Location</th>
-              </tr>
-            </thead>
-            <tbody>
-              {workReports.length > 0 ? (
-                workReports.map((report) => (
-                  <tr key={report.id}>
-                    <td>{report.id}</td>
-                    <td>{report.crmEmployee.fullName}</td>
-                    <td>{new Date(report.date).toLocaleDateString()}</td>
-                    <td>{report.nameOfPerson}</td>
-                    <td>{report.projectName}</td>
-                    <td>{report.remarks}</td>
-                    <td>{report.workReport}</td>
-                    <td>
-                      {report.reminderDate
-                        ? new Date(report.reminderDate).toLocaleDateString()
-                        : "N/A"}
-                    </td>
-                    <td>
-                      {report.latitude && report.longitude ? (
-                        <>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() =>
-                              handleViewLocation(
-                                report.latitude,
-                                report.longitude
-                              )
-                            }
-                          >
-                            View Location
-                          </Button>
-                        </>
-                      ) : (
-                        "N/A"
-                      )}
+          <>
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  <th>S.No</th>
+                 
+                  <th>Employee</th>
+                  <th>Date</th>
+                  <th>Name of Person</th>
+                  <th>Project Name</th>
+                  <th>Remarks</th>
+                  <th>Work Report</th>
+                  <th>Reminder Date</th>
+                  <th>Location</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedReports.length > 0 ? (
+                  paginatedReports.map((report, idx) => (
+                    <tr key={report.id}>
+                      <td>{(page - 1) * rowsPerPage + idx + 1}</td>
+                      
+                      <td>{report.crmEmployee.fullName}</td>
+                      <td>{new Date(report.date).toLocaleDateString()}</td>
+                      <td>{report.nameOfPerson}</td>
+                      <td>{report.projectName}</td>
+                      <td>{report.remarks}</td>
+                      <td>{report.workReport}</td>
+                      <td>
+                        {report.reminderDate
+                          ? new Date(report.reminderDate).toLocaleDateString()
+                          : "N/A"}
+                      </td>
+                      <td>
+                        {report.latitude && report.longitude ? (
+                          <>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() =>
+                                handleViewLocation(
+                                  report.latitude,
+                                  report.longitude
+                                )
+                              }
+                            >
+                              View Location
+                            </Button>
+                          </>
+                        ) : (
+                          "N/A"
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="10" className="text-center">
+                      No work reports available.
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="8" className="text-center">
-                    No work reports available.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </Table>
+                )}
+              </tbody>
+            </Table>
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <Stack spacing={2} alignItems="center" sx={{ mt: 3 }}>
+                <Pagination
+                  count={totalPages}
+                  page={page}
+                  onChange={(_, value) => setPage(value)}
+                  color="primary"
+                  shape="rounded"
+                  size="large"
+                  showFirstButton
+                  showLastButton
+                />
+              </Stack>
+            )}
+          </>
         )}
 
         {/* Location Modal */}

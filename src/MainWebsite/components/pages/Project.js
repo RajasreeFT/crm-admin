@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import "../pages/project.css";
-import Image1 from "../Images/Future_green.pdf";
+import Image1 from "../Images/future_green.pdf";
 import Image2 from "../Images/sai_keshava.pdf";
 
 const Project = () => {

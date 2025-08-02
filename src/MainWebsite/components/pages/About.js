@@ -14,101 +14,22 @@ const About = () => {
         </h2>
         <i>
           <p className="ideology-text text-center">
-            At Rajasree Townships, we believe that land is more than just an
-            asset — it's a legacy. With a strong foundation built on trust,
-            transparency, and customer satisfaction, we’ve grown to become a
-            renowned real estate organization serving the states of Telangana
-            and Andhra Pradesh.
+            Rajasree township has completed a decade of successful service. We
+            aim to contribute to the development of upcoming cities and
+            therefore work assiduously on every project we undertake. Our
+            primary objective is to provide visionary world-class ventures in
+            vibrant, sustainable, and eco-friendly landscapes with lush greenery
+            and a pleasant climate. The projects are structured around
+            high-growth, high-return developments where low-cost investments are
+            transformed to offer potential returns of up to 200% in the future
+            and consequently address the diverse needs of all communities to
+            ensure affordability. In response to the evolving technology today,
+            we offer digital services designed to ensure seamless access to our
+            schemes for all users, thereby making it easy for anyone who wants
+            to join our ventures. Land has value, and value is insurance
           </p>
-          <p className="ideology-text text-center">
-            Specializing in open plots and farmland ventures, we are dedicated
-            to helping individuals and families secure their dream investment
-            with confidence. Whether you're looking to build your future home,
-            expand your land portfolio, or embrace nature through serene
-            farmland, Rajasree Townships offers you the perfect opportunity to
-            grow. With less price and immense potential to grow
-          </p>
-          <p className="ideology-text text-center">
-            With years of industry experience and a deep understanding of market
-            trends, we carefully select prime locations with immense potential
-            for appreciation, development, and peace of living. Every project we
-            undertake is legally compliant, HMDA/DTCP-approved (where
-            applicable), and backed by clear documentation, ensuring a smooth
-            and secure ownership experience for our clients.
-          </p>
-          <p className="ideology-text text-center">
-            Our team is passionate about turning your real estate goals into a
-            reality. We walk every step with you — from site visits to
-            registration — ensuring personalized support and honest guidance
-            throughout the process. Join the growing community of happy clients
-            who trust Rajasree Townships for their land investments. Because
-            when you invest with us, you don’t just buy a plot — you build your
-            future.
-          </p>
-          <Container
-            fluid
-            style={{
-              background: "#5cb874",
-              padding: "2rem 0",
-              margin: "3rem 0",
-              borderTop: "1px solid rgba(245, 84, 10, 0.1)",
-              borderBottom: "1px solid rgba(192, 102, 12, 0.1)",
-              borderRadius: "50px",
-            }}
-          >
-            <Container className="text-center">
-              <h2
-                style={{
-                  fontSize: "2.5rem",
-                  fontWeight: 300,
-                  letterSpacing: "1px",
-                  marginBottom: "1.5rem",
-                  color: "white",
-                  position: "relative",
-                  display: "inline-block",
-                }}
-              >
-                <span
-                  style={{
-                    display: "block",
-                    fontSize: "1rem",
-                    fontWeight: 600,
-                    letterSpacing: "2px",
-                    textTransform: "uppercase",
-                    color: "tomato",
-                    marginBottom: "0.5rem",
-                  }}
-                >
-                  Rajasree Townships
-                </span>
-                Where your dreams take root
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: "-10px",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    width: "80px",
-                    height: "3px",
-                    background: "tomato",
-                  }}
-                ></div>
-              </h2>
 
-              <p
-                className="mt-4"
-                style={{
-                  maxWidth: "600px",
-                  margin: "0 auto",
-                  fontSize: "1.5rem",
-                  lineHeight: "2",
-                  color: "white",
-                }}
-              >
-                Invest and wait, Dont wait and invest
-              </p>
-            </Container>
-          </Container>
+          
         </i>
         <hr className="hrLine" />
       </Container>
@@ -132,25 +53,22 @@ const About = () => {
               Director – Rajasree Townships
             </span>
             <p className="intro pt-3 ">
-              At Rajasree Townships, our mission is deeply rooted in empowering
-              people through meaningful land ownership. We understand that
-              investing in real estate is not just a financial decision — it's
-              an emotional one that shapes generations to come. Since the
-              inception of our journey, we've been committed to offering open
-              plots and farmlands that reflect value, trust, and future growth.
-              Each project is carefully crafted with a focus on legal clarity,
-              prime locations, and the potential for long-term appreciation and easy buy system.
+              Rajasree township has completed a decade of successful service. We
+              aim to contribute to the development of upcoming cities and
+              therefore work assiduously on every project we undertake. Our
+              primary objective is to provide visionary world-class ventures in
+              vibrant, sustainable, and eco-friendly landscapes with lush
+              greenery and a pleasant climate. The projects are structured
+              around high-growth, high-return developments where low-cost
+              investments are transformed to offer potential returns of up to
+              200% in the future and consequently address the diverse needs of
+              all communities to ensure affordability. In response to the
+              evolving technology today, we offer digital services designed to
+              ensure seamless access to our schemes for all users, thereby
+              making it easy for anyone who wants to join our ventures. Land has
+              value, and value is insurance
             </p>
-            <p className="intro pt-3 ">
-              As the Director of this organization, I take immense pride in our
-              transparent dealings, customer-centric approach, and relentless
-              pursuit of excellence. Our goal is simple — to ensure that every
-              client feels confident, secure, and proud of their investment with
-              us. I extend my heartfelt gratitude to all our customers,
-              partners, and well-wishers who have trusted us and continue to be
-              a part of the Rajasree Townships family. Your trust is our
-              greatest strength.
-            </p>
+            
           </Col>
         </Row>
 

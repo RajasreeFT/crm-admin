@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { API_BASE_URL } from '../auth/Api'; // Adjust this to your API base URL
+import { API_BASE_URL } from '../auth/Api';
 import { useNavigate, useParams } from 'react-router-dom';
 import useAxios from '../auth/useAxios';
 import { Base } from '../components/Base';
-import { Breadcrumbs, Link } from '@mui/material';
+import { Breadcrumbs, Link, Paper, Typography, Box } from '@mui/material';
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
-import { Button, Spinner } from 'react-bootstrap'; // Import Spinner from react-bootstrap
+import { Button, Spinner, Form, Row, Col } from 'react-bootstrap';
 
 const UpdatePunchActivity = () => {
   const { id } = useParams();
   const [date, setDate] = useState('');
   const [timeOfPunchIn, setTimeOfPunchIn] = useState('');
   const [timeOfPunchOut, setTimeOfPunchOut] = useState('');
-  const [punchInImagePath, setPunchInImagePath] = useState(null); // Store image path
-  const [punchOutImagePath, setPunchOutImagePath] = useState(null); // Store image path
+  const [punchInImagePath, setPunchInImagePath] = useState(null);
+  const [punchOutImagePath, setPunchOutImagePath] = useState(null);
   const [loading, setLoading] = useState(false);
   const api = useAxios();
   const navigation = useNavigate();
@@ -28,8 +28,8 @@ const UpdatePunchActivity = () => {
         setDate(date);
         setTimeOfPunchIn(timeOfPunchIn);
         setTimeOfPunchOut(timeOfPunchOut);
-        setPunchInImagePath(punchInImagePath); // Set the path for Punch In image
-        setPunchOutImagePath(punchOutImagePath); // Set the path for Punch Out image
+        setPunchInImagePath(punchInImagePath);
+        setPunchOutImagePath(punchOutImagePath);
       } catch (error) {
         console.error('Error fetching punch activity:', error);
       }
@@ -42,9 +42,9 @@ const UpdatePunchActivity = () => {
     const file = e.target.files[0];
     if (file) {
       if (type === 'punchIn') {
-        setPunchInImagePath(file); // Set file for Punch In image
+        setPunchInImagePath(file);
       } else {
-        setPunchOutImagePath(file); // Set file for Punch Out image
+        setPunchOutImagePath(file);
       }
     }
   };
@@ -60,15 +60,14 @@ const UpdatePunchActivity = () => {
     formData.append('timeOfPunchOut', timeOfPunchOut);
 
     if (punchInImagePath) {
-      formData.append('punchInImage', punchInImagePath); // Add Punch In image file to form data
+      formData.append('punchInImage', punchInImagePath);
     }
-
     if (punchOutImagePath) {
-      formData.append('punchOutImage', punchOutImagePath); // Add Punch Out image file to form data
+      formData.append('punchOutImage', punchOutImagePath);
     }
 
     try {
-      const token = localStorage.getItem('jwtToken'); // Retrieve JWT token from localStorage
+      const token = localStorage.getItem('jwtToken');
       const response = await axios.put(
         `${API_BASE_URL}/crm/admin/punch/update/${id}`,
         formData,
@@ -82,7 +81,7 @@ const UpdatePunchActivity = () => {
 
       if (response.status === 200) {
         alert('Punch activity updated successfully.');
-        navigation('/employees-punch-activity'); 
+        navigation('/employees-punch-activity');
       } else {
         alert('Failed to update punch activity.');
       }
@@ -96,12 +95,13 @@ const UpdatePunchActivity = () => {
 
   return (
     <Base>
-      <div
-        className="pt-3 mt-5"
-        style={{
+      <Box
+        sx={{
+          pt: 3,
+          mt: 5,
           display: "flex",
           justifyContent: "flex-end",
-          paddingRight: "20px",
+          pr: 3,
         }}
       >
         <Breadcrumbs
@@ -110,7 +110,6 @@ const UpdatePunchActivity = () => {
         >
           <Link
             underline="hover"
-            key="1"
             color="inherit"
             href="/dashboard"
             sx={{ color: "darkslategrey", fontWeight: "bold" }}
@@ -119,94 +118,152 @@ const UpdatePunchActivity = () => {
           </Link>
           <Link
             underline="none"
-            key="2"
             color="inherit"
-            href="/list-departments"
+            href="/employees-punch-activity"
             sx={{ color: "darkslategrey", fontWeight: "bold" }}
           >
-            Departments
+            Punch Activity
           </Link>
-          <Link underline="hover" key="2" color="inherit" href={`/update-departments/${id}`} sx={{ color: "darkslategrey", fontWeight: "bold" }}>
-            Edit Department
-          </Link>
+          <Typography color="text.primary" sx={{ fontWeight: "bold" }}>
+            Update
+          </Typography>
         </Breadcrumbs>
-      </div>
-      <div className="container p-5">
-        <h2 className="text-center fw-bold" style={{ color: "darkslategrey" }}>
-          Update Punch Activity
-        </h2>
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <hr style={{ width: "90%" }} />
-        </div>
-
-        <form onSubmit={handleSubmit} encType="multipart/form-data">
-          <div className="mb-3">
-            <label className="form-label">Date</label>
-            <input
-              type="date"
-              className="form-control"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label">Time of Punch In</label>
-            <input
-              type="time"
-              className="form-control"
-              value={timeOfPunchIn}
-              onChange={(e) => setTimeOfPunchIn(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label">Time of Punch Out</label>
-            <input
-              type="time"
-              className="form-control"
-              value={timeOfPunchOut}
-              onChange={(e) => setTimeOfPunchOut(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label">Select Punch In Image</label>
-            <input
-              type="file"
-              className="form-control"
-              accept="image/*"
-              onChange={(e) => handleFileChange(e, 'punchIn')}
-            />
-            {punchInImagePath && typeof punchInImagePath === 'string' && (
-              <img src={punchInImagePath} alt="Punch In" className="mt-3" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
-            )}
-          </div>
-
-          <div className="mb-3">
-            <label className="form-label">Select Punch Out Image</label>
-            <input
-              type="file"
-              className="form-control"
-              accept="image/*"
-              onChange={(e) => handleFileChange(e, 'punchOut')}
-            />
-            {punchOutImagePath && typeof punchOutImagePath === 'string' && (
-              <img src={punchOutImagePath} alt="Punch Out" className="mt-3" style={{ width: '100px', height: '100px', objectFit: 'contain' }} />
-            )}
-          </div>
-
-          <div className="mb-3">
-            <Button type="submit" variant="primary" disabled={loading}>
-              {loading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : null}
-              {loading ? ' Updating...' : 'Update Punch Activity'}
-            </Button>
-          </div>
-        </form>
-      </div>
+      </Box>
+      <Box className="container p-4" sx={{ maxWidth: 600 }}>
+        <Paper elevation={4} sx={{ p: 4, borderRadius: 3 }}>
+          <Typography
+            variant="h5"
+            align="center"
+            fontWeight="bold"
+            color="primary.dark"
+            gutterBottom
+          >
+            Update Punch Activity
+          </Typography>
+          <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+            <hr style={{ width: "90%" }} />
+          </Box>
+          <Form onSubmit={handleSubmit} encType="multipart/form-data">
+            <Form.Group className="mb-3" controlId="date">
+              <Form.Label>Date</Form.Label>
+              <Form.Control
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                required
+                size="lg"
+              />
+            </Form.Group>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3" controlId="timeOfPunchIn">
+                  <Form.Label>Time of Punch In</Form.Label>
+                  <Form.Control
+                    type="time"
+                    value={timeOfPunchIn}
+                    onChange={(e) => setTimeOfPunchIn(e.target.value)}
+                    required
+                    size="lg"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3" controlId="timeOfPunchOut">
+                  <Form.Label>Time of Punch Out</Form.Label>
+                  <Form.Control
+                    type="time"
+                    value={timeOfPunchOut}
+                    onChange={(e) => setTimeOfPunchOut(e.target.value)}
+                    required
+                    size="lg"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={6}>
+                <Form.Group className="mb-3" controlId="punchInImage">
+                  <Form.Label>Punch In Image</Form.Label>
+                  <Form.Control
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileChange(e, 'punchIn')}
+                    size="lg"
+                  />
+                  {punchInImagePath && typeof punchInImagePath === 'string' && (
+                    <Box sx={{ mt: 2, textAlign: "center" }}>
+                      <img
+                        src={punchInImagePath}
+                        alt="Punch In"
+                        style={{
+                          width: 90,
+                          height: 90,
+                          objectFit: "cover",
+                          borderRadius: 8,
+                          border: "1px solid #eee",
+                          boxShadow: "0 2px 8px #eee"
+                        }}
+                      />
+                    </Box>
+                  )}
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group className="mb-3" controlId="punchOutImage">
+                  <Form.Label>Punch Out Image</Form.Label>
+                  <Form.Control
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleFileChange(e, 'punchOut')}
+                    size="lg"
+                  />
+                  {punchOutImagePath && typeof punchOutImagePath === 'string' && (
+                    <Box sx={{ mt: 2, textAlign: "center" }}>
+                      <img
+                        src={punchOutImagePath}
+                        alt="Punch Out"
+                        style={{
+                          width: 90,
+                          height: 90,
+                          objectFit: "cover",
+                          borderRadius: 8,
+                          border: "1px solid #eee",
+                          boxShadow: "0 2px 8px #eee"
+                        }}
+                      />
+                    </Box>
+                  )}
+                </Form.Group>
+              </Col>
+            </Row>
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                disabled={loading}
+                style={{ minWidth: 200, fontWeight: "bold", borderRadius: 25 }}
+              >
+                {loading ? (
+                  <>
+                    <Spinner
+                      as="span"
+                      animation="border"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                      className="me-2"
+                    />
+                    Updating...
+                  </>
+                ) : (
+                  "Update Punch Activity"
+                )}
+              </Button>
+            </Box>
+          </Form>
+        </Paper>
+      </Box>
     </Base>
   );
 };

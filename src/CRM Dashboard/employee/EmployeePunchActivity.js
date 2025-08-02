@@ -7,6 +7,8 @@ import {
   Button,
   MenuItem,
   Select,
+  Pagination,
+  Stack,
 } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import useAxios from "../auth/useAxios";
@@ -32,6 +34,8 @@ export const EmployeePunchActivity = () => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 10;
   const api = useAxios();
 
   const fetchEmployee = async () => {
@@ -63,23 +67,29 @@ export const EmployeePunchActivity = () => {
     XLSX.writeFile(workbook, "PunchActivities.xlsx");
   };
 
+  // Sort punch data by date (descending)
   const getFilteredPunchData = () => {
-    return punch.filter((p) => {
-      const punchDate = new Date(p.date);
-      const from = fromDate ? new Date(fromDate) : null;
-      const to = toDate ? new Date(toDate) : null;
-
-      return (
-        (!selectedEmployee || p.crmEmployee.fullName === selectedEmployee) &&
-        (!from || punchDate >= from) &&
-        (!to || punchDate <= to)
-      );
-    });
+    return punch
+      .filter((p) => {
+        const punchDate = new Date(p.date);
+        const from = fromDate ? new Date(fromDate) : null;
+        const to = toDate ? new Date(toDate) : null;
+        return (
+          (!selectedEmployee || p.crmEmployee.fullName === selectedEmployee) &&
+          (!from || punchDate >= from) &&
+          (!to || punchDate <= to)
+        );
+      })
+      .sort((a, b) => new Date(b.date) - new Date(a.date)); // Descending by date
   };
 
+  // Paginate table data
   const getTableData = () => {
-    return getFilteredPunchData().map((p, index) => ({
-      "S.No": index + 1,
+    const sortedData = getFilteredPunchData();
+    const startIdx = (page - 1) * rowsPerPage;
+    const paginatedData = sortedData.slice(startIdx, startIdx + rowsPerPage);
+    return paginatedData.map((p, index) => ({
+      "S.No": startIdx + index + 1,
       "Employee Name": p.crmEmployee.fullName || "N/A",
       Date: p.date,
       "Punch-in Time": formatTime(p.timeOfPunchIn),
@@ -88,7 +98,7 @@ export const EmployeePunchActivity = () => {
       "Work Report": p.workReport || "N/A",
       punchInImage: p.punchInImagePath,
       punchOutImage: p.punchOutImagePath,
-      "id":p.id
+      "id": p.id,
     }));
   };
 
@@ -117,6 +127,10 @@ export const EmployeePunchActivity = () => {
   const handleEditPunchActivity = (id) => {
     navigate(`/update-punch/${id}`);
   };
+
+  // For pagination controls
+  const totalRows = getFilteredPunchData().length;
+  const totalPages = Math.ceil(totalRows / rowsPerPage);
 
   return (
     <div>
@@ -226,6 +240,7 @@ export const EmployeePunchActivity = () => {
                   variant="contained"
                   color="primary"
                   onClick={handleExportToExcel}
+                  sx={{ borderRadius: 2, fontWeight: "bold" }}
                 >
                   Export to Excel
                 </Button>
@@ -234,81 +249,126 @@ export const EmployeePunchActivity = () => {
 
             {/* Punch Activity Table */}
             <div className="container">
-              <table className="table">
-                <thead
-                  className="text-white text-center"
-                  style={{ backgroundColor: "#2C2F33" }}
-                >
-                  <tr>
-                    <th>S.No</th>
-                    <th>Employee Name</th>
-                    <th>Date</th>
-                    <th>Punch-in Time</th>
-                    <th>Punch-in Image</th>
-                    <th>Punch-out Time</th>
-                    <th>Punch-out Image</th>
-                    <th>Login Time (hrs:mins)</th>
-                    <th>Work Report</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredPunch.length > 0 ? (
-                    filteredPunch.map((p, index) => (
-                      <tr key={index} className="text-center">
-                        <td>{p["S.No"]}</td>
-                        <td>{p["Employee Name"]}</td>
-                        <td>{p.Date}</td>
-                        <td>{p["Punch-in Time"]}</td>
-
-                        <td>
-                          {p.punchInImage ? (
-                            <img
-                              src={p["punchInImage"]}
-                              alt="Punch-in"
-                              style={{ width: "50px", height: "50px" }}
-                            />
-                          ) : (
-                            <span>No Image</span>
-                          )}
-                        </td>
-                        <td>{p["Punch-out Time"]}</td>
-                        <td>
-                          {p.punchOutImage ? (
-                            <img
-                              src={p["punchOutImage"]}
-                              alt="Punch-out"
-                              style={{ width: "50px", height: "50px" }}
-                            />
-                          ) : (
-                            <span>No Image</span>
-                          )}
-                        </td>
-                        <td>{p["Login Time"]}</td>
-                        <td>{p["Work Report"]}</td>
-                        <td>
-                          {" "}
-                          <div className="col-md-6">
-                            <button
-                              className="btn btn-success"
-                              onClick={() => handleEditPunchActivity(p["id"])}
-                              style={{ color: "white" }}
+              <div className="table-responsive shadow rounded">
+                <table className="table table-hover align-middle">
+                  <thead
+                    className="text-white text-center"
+                    style={{
+                      background: "linear-gradient(90deg, #2C2F33 60%, #23272A 100%)",
+                      fontSize: "1rem",
+                      letterSpacing: "0.03em",
+                    }}
+                  >
+                    <tr>
+                      <th>S.No</th>
+                      <th>Employee Name</th>
+                      <th>Date</th>
+                      <th>Punch-in Time</th>
+                      <th>Punch-in Image</th>
+                      <th>Punch-out Time</th>
+                      <th>Punch-out Image</th>
+                      <th>Login Time (hrs:mins)</th>
+                      <th>Work Report</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredPunch.length > 0 ? (
+                      filteredPunch.map((p, index) => (
+                        <tr key={index} className="text-center">
+                          <td>{p["S.No"]}</td>
+                          <td>{p["Employee Name"]}</td>
+                          <td>{p.Date}</td>
+                          <td>{p["Punch-in Time"]}</td>
+                          <td>
+                            {p.punchInImage ? (
+                              <img
+                                src={p["punchInImage"]}
+                                alt="Punch-in"
+                                style={{
+                                  width: "45px",
+                                  height: "45px",
+                                  borderRadius: "8px",
+                                  border: "1px solid #ddd",
+                                  objectFit: "cover",
+                                }}
+                              />
+                            ) : (
+                              <span className="text-muted">No Image</span>
+                            )}
+                          </td>
+                          <td>{p["Punch-out Time"]}</td>
+                          <td>
+                            {p.punchOutImage ? (
+                              <img
+                                src={p["punchOutImage"]}
+                                alt="Punch-out"
+                                style={{
+                                  width: "45px",
+                                  height: "45px",
+                                  borderRadius: "8px",
+                                  border: "1px solid #ddd",
+                                  objectFit: "cover",
+                                }}
+                              />
+                            ) : (
+                              <span className="text-muted">No Image</span>
+                            )}
+                          </td>
+                          <td>{p["Login Time"]}</td>
+                          <td>
+                            <span
+                              style={{
+                                display: "inline-block",
+                                maxWidth: "120px",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                              title={p["Work Report"]}
                             >
-                              <EditIcon color="white" /> Edit
-                            </button>
-                          </div>{" "}
+                              {p["Work Report"]}
+                            </span>
+                          </td>
+                          <td>
+                            <Button
+                              variant="contained"
+                              color="success"
+                              size="small"
+                              startIcon={<EditIcon />}
+                              onClick={() => handleEditPunchActivity(p["id"])}
+                              sx={{ borderRadius: 2, fontWeight: "bold" }}
+                            >
+                              Edit
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="10" className="text-center text-muted">
+                          No records found.
                         </td>
                       </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan="10" className="text-center">
-                        No records found.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <Stack spacing={2} alignItems="center" sx={{ mt: 3 }}>
+                  <Pagination
+                    count={totalPages}
+                    page={page}
+                    onChange={(_, value) => setPage(value)}
+                    color="primary"
+                    shape="rounded"
+                    size="large"
+                    showFirstButton
+                    showLastButton
+                  />
+                </Stack>
+              )}
             </div>
           </>
         )}
