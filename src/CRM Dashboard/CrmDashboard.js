@@ -6,11 +6,14 @@ import {
   Typography,
   Box,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Grid,
+  MenuItem,
+  TextField
 } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Link from "@mui/material/Link";
-import { FaUsers, FaUsersSlash, FaChartBar } from "react-icons/fa";
+import { FaUsers, FaUsersSlash, FaChartBar, FaCalendarAlt } from "react-icons/fa";
 import "./styles/Dashboard.css";
 import { Col, Row } from "react-bootstrap";
 import useAxios from "./auth/useAxios";
@@ -26,7 +29,10 @@ import {
   Legend, 
   ResponsiveContainer,
   CartesianGrid,
-  Cell
+  Cell,
+  PieChart, 
+  Pie, 
+  Sector
 } from "recharts";
 
 export const CrmDashboard = () => {
@@ -37,6 +43,8 @@ export const CrmDashboard = () => {
   const [inactiveCount, setInactiveCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [graphData, setGraphData] = useState([]);
+  const [pieData, setPieData] = useState([]);
+  const [selectedDate, setSelectedDate] = useState("");
   const [error, setError] = useState("");
   const api = useAxios();
   const theme = useTheme();
@@ -99,6 +107,11 @@ export const CrmDashboard = () => {
 
         const results = await Promise.all(promises);
         setGraphData(results);
+        
+        // Set default selected date to today
+        const todayDate = today.toISOString().split("T")[0];
+        setSelectedDate(todayDate);
+        updatePieData(todayDate, results);
       } catch (error) {
         console.error("Error fetching punch data", error);
       }
@@ -107,6 +120,23 @@ export const CrmDashboard = () => {
     fetchEmployees();
     fetchPunchData();
   }, [totalRecords]);
+
+  const updatePieData = (date, data = graphData) => {
+    const selectedDayData = data.find(item => item.date === date);
+    if (selectedDayData) {
+      setPieData([
+        { name: 'Punched In & Out', value: selectedDayData.punchedInAndOut, color: '#4caf50' },
+        { name: 'Punched In Only', value: selectedDayData.punchedInOnly, color: '#f44336' },
+        { name: 'Not Punched', value: selectedDayData.notPunched, color: '#9e9e9e' }
+      ]);
+    }
+  };
+
+  const handleDateChange = (event) => {
+    const date = event.target.value;
+    setSelectedDate(date);
+    updatePieData(date);
+  };
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -136,6 +166,38 @@ export const CrmDashboard = () => {
       );
     }
     return null;
+  };
+
+  const renderActiveShape = (props) => {
+    const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
+    
+    return (
+      <g>
+        <text x={cx} y={cy} dy={-20} textAnchor="middle" fill={fill} style={{ fontWeight: 'bold' }}>
+          {payload.name}
+        </text>
+        <text x={cx} y={cy} dy={0} textAnchor="middle" fill={fill}>
+          {value} employees
+        </text>
+        <text x={cx} y={cy} dy={20} textAnchor="middle" fill={fill}>
+          {`${(percent * 100).toFixed(2)}%`}
+        </text>
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius + 10}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+        />
+      </g>
+    );
+  };
+
+  const [activeIndex, setActiveIndex] = useState(0);
+  const onPieEnter = (_, index) => {
+    setActiveIndex(index);
   };
 
   const StatCard = ({ value, title, icon, color }) => (
@@ -323,6 +385,135 @@ export const CrmDashboard = () => {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
+          </Box>
+
+          {/* New Pie Chart Section */}
+          <Box sx={{ 
+            px: isMobile ? 2 : 4, 
+            mb: 5,
+            backgroundColor: 'background.paper',
+            borderRadius: 2,
+            boxShadow: theme.shadows[1],
+            p: 3
+          }}>
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Box sx={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  mb: 3
+                }}>
+                  <Typography variant="h5" sx={{ 
+                    fontWeight: "bold",
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}>
+                    <FaCalendarAlt style={{ marginRight: 10, color: theme.palette.primary.main }} />
+                    Daily Punch Activity
+                  </Typography>
+                </Box>
+                
+                <TextField
+                  select
+                  fullWidth
+                  label="Select Date"
+                  value={selectedDate}
+                  onChange={handleDateChange}
+                  variant="outlined"
+                  sx={{ mb: 3 }}
+                >
+                  {graphData.map((day) => (
+                    <MenuItem key={day.date} value={day.date}>
+                      {day.displayDate}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                
+                <Box sx={{ height: 300 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        activeIndex={activeIndex}
+                        activeShape={renderActiveShape}
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="value"
+                        onMouseEnter={onPieEnter}
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Legend />
+                      <Tooltip 
+                        formatter={(value) => [`${value} employees`, 'Count']}
+                        labelFormatter={(name) => `Activity: ${name}`}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </Box>
+              </Grid>
+              
+              <Grid item xs={12} md={6}>
+                <Box sx={{ 
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
+                  justifyContent: 'center'
+                }}>
+                  <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
+                    Activity Breakdown
+                  </Typography>
+                  
+                  {pieData.length > 0 && (
+                    <>
+                      {pieData.map((item, index) => (
+                        <Box key={index} sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          mb: 2,
+                          p: 2,
+                          backgroundColor: theme.palette.background.default,
+                          borderRadius: 1,
+                          borderLeft: `4px solid ${item.color}`
+                        }}>
+                          <Box sx={{ 
+                            width: 16, 
+                            height: 16, 
+                            backgroundColor: item.color,
+                            mr: 2,
+                            borderRadius: '50%'
+                          }} />
+                          <Typography variant="body1" sx={{ flexGrow: 1 }}>
+                            {item.name}
+                          </Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                            {item.value} ({((item.value / totalRecords) * 100).toFixed(1)}%)
+                          </Typography>
+                        </Box>
+                      ))}
+                      
+                      <Box sx={{ 
+                        mt: 3, 
+                        p: 2,
+                        backgroundColor: theme.palette.primary.light,
+                        borderRadius: 1,
+                        textAlign: 'center'
+                      }}>
+                        <Typography variant="body1" sx={{ color: theme.palette.primary.contrastText }}>
+                          Total Employees: {totalRecords}
+                        </Typography>
+                      </Box>
+                    </>
+                  )}
+                </Box>
+              </Grid>
+            </Grid>
           </Box>
         </>
       )}
