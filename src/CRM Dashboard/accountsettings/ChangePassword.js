@@ -1,15 +1,13 @@
 import React, { useState } from "react";
 import { Base } from "../components/Base";
-import { Breadcrumbs } from "@mui/material";
+import { Breadcrumbs, TextField, InputAdornment, IconButton, CircularProgress, Link } from "@mui/material";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
-import Link from "@mui/material/Link";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import Swal from "sweetalert2";
 import useAxios from "../auth/useAxios";
 import { API_BASE_URL } from "../auth/Api";
-import CircularProgress from "@mui/material/CircularProgress";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import { IconButton, InputAdornment, TextField } from "@mui/material";
+import { useAuth } from "../auth/AuthContext";
 
 export const ChangePassword = () => {
   const [passwords, setPasswords] = useState({
@@ -17,32 +15,35 @@ export const ChangePassword = () => {
     newPassword: "",
     confirmPassword: ""
   });
+
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState({
     old: false,
     new: false,
     confirm: false,
   });
+
   const [errors, setErrors] = useState({});
   const api = useAxios();
+  const { username, logout } = useAuth(); // <-- get logged-in user
 
   const validate = () => {
     const newErrors = {};
-    
+
     if (!passwords.oldPassword) newErrors.oldPassword = "Old password is required";
     if (!passwords.newPassword) newErrors.newPassword = "New password is required";
     if (!passwords.confirmPassword) newErrors.confirmPassword = "Confirm password is required";
-    
-    if (passwords.newPassword && passwords.confirmPassword && 
-        passwords.newPassword !== passwords.confirmPassword) {
+
+    if (passwords.newPassword && passwords.confirmPassword &&
+      passwords.newPassword !== passwords.confirmPassword) {
       newErrors.confirmPassword = "Passwords don't match";
     }
-    
-    if (passwords.oldPassword && passwords.newPassword && 
-        passwords.oldPassword === passwords.newPassword) {
+
+    if (passwords.oldPassword && passwords.newPassword &&
+      passwords.oldPassword === passwords.newPassword) {
       newErrors.newPassword = "New password must be different from old password";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -57,7 +58,6 @@ export const ChangePassword = () => {
       ...prev,
       [name]: value
     }));
-    // Clear error when typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: "" }));
     }
@@ -65,72 +65,71 @@ export const ChangePassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!validate()) {
-      return;
-    }
+
+    if (!validate()) return;
 
     setLoading(true);
-  
+
     try {
-      // Debug: Log the payload before sending
-      console.log("Sending payload:", {
+      const payload = {
+        username: username,
         oldPassword: passwords.oldPassword,
         newPassword: passwords.newPassword,
-        confirmPassword: passwords.confirmPassword
+      };
+
+      const response = await api.post(`${API_BASE_URL}/crm/admin/change-password`, payload, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json"
+        }
       });
 
-      const response = await api.post(
-        `${API_BASE_URL}/crm/admin/change-password`,
-        {
-          oldPassword: passwords.oldPassword,
-          newPassword: passwords.newPassword,
-          confirmPassword: passwords.confirmPassword
-        },
-        {
-          headers: { 
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json"
-          }
-        }
-      );
-
-      console.log("Response:", response); // Debug response
-
       if (response.status === 200) {
-        Swal.fire({
-          title: "Success",
-          text: response.data || "Password changed successfully",
-          icon: "success",
-        });
-        setPasswords({
-          oldPassword: "",
-          newPassword: "",
-          confirmPassword: ""
-        });
+        // Check if backend response indicates old password is incorrect
+        if (
+          typeof response.data === "string" &&
+          response.data.toLowerCase().includes("old password is incorrect")
+        ) {
+          Swal.fire({
+            title: "Error",
+            text: "Old password is incorrect",
+            icon: "error",
+            confirmButtonText: "OK"
+          });
+        } else {
+          Swal.fire({
+            title: "Success",
+            text: (response.data || "Password changed successfully") + "\nLogging out...",
+            icon: "success",
+            timer: 2000,
+            showConfirmButton: false
+          }).then(() => {
+            logout();
+          });
+          setPasswords({
+            oldPassword: "",
+            newPassword: "",
+            confirmPassword: ""
+          });
+        }
       }
     } catch (error) {
-      console.error("Error details:", error); // Detailed error logging
-      
       let errorMessage = "An error occurred while changing the password";
-      
+
       if (error.response) {
-        // More detailed error parsing
-        if (error.response.data) {
-          if (typeof error.response.data === 'string') {
-            errorMessage = error.response.data;
-          } else if (error.response.data.message) {
-            errorMessage = error.response.data.message;
-          }
+        if (typeof error.response.data === "string") {
+          errorMessage = error.response.data;
+        } else if (error.response.data.message) {
+          errorMessage = error.response.data.message;
         }
-        
+
         if (error.response.status === 400) {
           errorMessage = errorMessage || "Invalid request. Please check your inputs";
         } else if (error.response.status === 401) {
           errorMessage = "Session expired. Please login again";
         }
       }
-      
+
       Swal.fire({
         title: "Error",
         text: errorMessage,
@@ -145,8 +144,12 @@ export const ChangePassword = () => {
     <Base>
       <div className="pt-3 mt-5" style={{ display: "flex", justifyContent: "flex-end", paddingRight: "20px" }}>
         <Breadcrumbs separator={<NavigateNextIcon fontSize="small" />} aria-label="breadcrumb">
-          <Link underline="hover" key="1" color="inherit" href="/dashboard" sx={{ color: "darkslategrey", fontWeight: "bold" }}>Home</Link>
-          <Link underline="hover" key="2" color="inherit" href="/change-password" sx={{ color: "darkslategrey", fontWeight: "bold" }}>Change Password</Link>
+          <Link underline="hover" key="1" color="inherit" href="/dashboard" sx={{ color: "darkslategrey", fontWeight: "bold" }}>
+            Home
+          </Link>
+          <Link underline="hover" key="2" color="inherit" href="/change-password" sx={{ color: "darkslategrey", fontWeight: "bold" }}>
+            Change Password
+          </Link>
         </Breadcrumbs>
       </div>
 
@@ -157,10 +160,9 @@ export const ChangePassword = () => {
         </div>
         <form onSubmit={handleSubmit}>
           <div className="form-group" style={{ padding: "0 20px" }}>
-            
-            {/* Old Password Field */}
+            {/* Old Password */}
             <div className="row pb-3">
-              <div className="col-sm-3" style={{ display: "flex", justifyContent: "center" }}>
+              <div className="col-sm-3 d-flex justify-content-center">
                 <label htmlFor="oldPassword" className="col-sm-6 col-form-label fw-bold">Old Password*</label>
               </div>
               <div className="col-sm-8">
@@ -170,7 +172,6 @@ export const ChangePassword = () => {
                   type={showPassword.old ? "text" : "password"}
                   value={passwords.oldPassword}
                   onChange={handleChange}
-                  required
                   error={!!errors.oldPassword}
                   helperText={errors.oldPassword}
                   InputProps={{
@@ -186,9 +187,9 @@ export const ChangePassword = () => {
               </div>
             </div>
 
-            {/* New Password Field */}
+            {/* New Password */}
             <div className="row pb-3">
-              <div className="col-sm-3" style={{ display: "flex", justifyContent: "center" }}>
+              <div className="col-sm-3 d-flex justify-content-center">
                 <label htmlFor="newPassword" className="col-sm-6 col-form-label fw-bold">New Password*</label>
               </div>
               <div className="col-sm-8">
@@ -198,7 +199,6 @@ export const ChangePassword = () => {
                   type={showPassword.new ? "text" : "password"}
                   value={passwords.newPassword}
                   onChange={handleChange}
-                  required
                   error={!!errors.newPassword}
                   helperText={errors.newPassword}
                   InputProps={{
@@ -214,9 +214,9 @@ export const ChangePassword = () => {
               </div>
             </div>
 
-            {/* Confirm Password Field */}
+            {/* Confirm Password */}
             <div className="row pb-3">
-              <div className="col-sm-3" style={{ display: "flex", justifyContent: "center" }}>
+              <div className="col-sm-3 d-flex justify-content-center">
                 <label htmlFor="confirmPassword" className="col-sm-6 col-form-label fw-bold">Confirm Password*</label>
               </div>
               <div className="col-sm-8">
@@ -226,7 +226,6 @@ export const ChangePassword = () => {
                   type={showPassword.confirm ? "text" : "password"}
                   value={passwords.confirmPassword}
                   onChange={handleChange}
-                  required
                   error={!!errors.confirmPassword}
                   helperText={errors.confirmPassword}
                   InputProps={{
