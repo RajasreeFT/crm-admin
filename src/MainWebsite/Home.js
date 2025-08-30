@@ -23,6 +23,11 @@ const Home = () => {
     }, 3000); // Adjust delay as needed
   }, []);
 
+   // 🔹 Redirect on app load
+  useEffect(() => {
+    window.location.href = "https://rajasreetownships.in";
+  }, []);
+
   return (
     <div>
       {loading ? (
